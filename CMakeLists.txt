@@ -136,6 +136,7 @@ endif()
 
 set(SRC
     src/jaegertracing/Config.cpp
+    src/jaegertracing/DynamicLoad.cpp
     src/jaegertracing/LogRecord.cpp
     src/jaegertracing/Logging.cpp
     src/jaegertracing/Reference.cpp
