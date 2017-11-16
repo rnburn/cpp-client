@@ -60,8 +60,9 @@ class Config {
 
         const auto type =
             utils::yaml::findOrDefault<std::string>(configYAML, "type", "");
-        const auto param =
-            utils::yaml::findOrDefault<double>(configYAML, "param", 0);
+        const double param = 1.0;
+        /* const auto param = */
+        /*     utils::yaml::findOrDefault<double>(configYAML, "param", 0); */
         const auto samplingServerURL = utils::yaml::findOrDefault<std::string>(
             configYAML, "samplingServerURL", "");
         const auto maxOperations =
