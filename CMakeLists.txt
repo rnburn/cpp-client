@@ -231,6 +231,7 @@ target_include_directories(jaegertracing PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>)
 target_link_libraries(jaegertracing ${LIBS})
+target_link_libraries(jaegertracing -static-libgcc -static-libstdc++)
 set_target_properties(jaegertracing PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION ${PROJECT_VERSION_MAJOR})
