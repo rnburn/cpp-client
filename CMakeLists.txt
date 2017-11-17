@@ -81,7 +81,7 @@ else()
 endif()
 list(APPEND package_deps thrift)
 
-hunter_add_package(opentracing-cpp)
+# hunter_add_package(opentracing-cpp)
 # Not `${hunter_config}` because OpenTracing provides its own
 # OpenTracingConfig.cmake file
 find_package(OpenTracing CONFIG REQUIRED)
