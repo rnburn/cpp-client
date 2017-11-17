@@ -85,7 +85,7 @@ list(APPEND package_deps thrift)
 # Not `${hunter_config}` because OpenTracing provides its own
 # OpenTracingConfig.cmake file
 find_package(OpenTracing CONFIG REQUIRED)
-list(APPEND LIBS OpenTracing::opentracing-static)
+list(APPEND LIBS OpenTracing::opentracing)
 
 option(JAEGERTRACING_WITH_YAML_CPP "Use yaml-cpp to parse config files" ON)
 option(JAEGERTRACING_COVERAGE "Build with coverage" $ENV{COVERAGE})
@@ -229,7 +229,7 @@ add_library(jaegertracing SHARED ${SRC})
 target_include_directories(jaegertracing PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>)
-target_link_libraries(jaegertracing -static-libgcc -static-libstdc++ ${LIBS})
+target_link_libraries(jaegertracing ${LIBS})
 set_target_properties(jaegertracing PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION ${PROJECT_VERSION_MAJOR})
