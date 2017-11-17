@@ -85,7 +85,7 @@ list(APPEND package_deps thrift)
 # Not `${hunter_config}` because OpenTracing provides its own
 # OpenTracingConfig.cmake file
 find_package(OpenTracing CONFIG REQUIRED)
-list(APPEND LIBS OpenTracing::opentracing-static)
+list(APPEND LIBS OpenTracing::opentracing)
 list(APPEND package_deps opentracing-cpp)
 
 option(JAEGERTRACING_WITH_YAML_CPP "Use yaml-cpp to parse config files" ON)
