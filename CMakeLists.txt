@@ -142,6 +142,7 @@ set(SRC
     src/jaegertracing/Tag.cpp
     src/jaegertracing/TraceID.cpp
     src/jaegertracing/Tracer.cpp
+    src/jaegertracing/TracerFactory.cpp
     src/jaegertracing/Transport.cpp
     src/jaegertracing/UDPTransport.cpp
     src/jaegertracing/baggage/BaggageSetter.cpp
