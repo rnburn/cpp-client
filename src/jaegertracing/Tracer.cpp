@@ -15,12 +15,48 @@
  */
 
 #include "jaegertracing/Tracer.h"
-
 #include "jaegertracing/Reference.h"
+#include "jaegertracing/TraceID.h"
+#include "jaegertracing/samplers/SamplingStatus.h"
+#include <algorithm>
+#include <cassert>
+#include <chrono>
+#include <iterator>
+#include <opentracing/util.h>
+#include <tuple>
 
 namespace jaegertracing {
+namespace {
+
+using SystemClock = Tracer::SystemClock;
+using SteadyClock = Tracer::SteadyClock;
+using TimePoints = std::tuple<SystemClock::time_point, SteadyClock::time_point>;
+
+TimePoints determineStartTimes(const opentracing::StartSpanOptions& options)
+{
+    if (options.start_system_timestamp == SystemClock::time_point() &&
+        options.start_steady_timestamp == SteadyClock::time_point()) {
+        return std::make_tuple(SystemClock::now(), SteadyClock::now());
+    }
+    if (options.start_system_timestamp == SystemClock::time_point()) {
+        return std::make_tuple(opentracing::convert_time_point<SystemClock>(
+                                   options.start_steady_timestamp),
+                               options.start_steady_timestamp);
+    }
+    if (options.start_steady_timestamp == SteadyClock::time_point()) {
+        return std::make_tuple(options.start_system_timestamp,
+                               opentracing::convert_time_point<SteadyClock>(
+                                   options.start_system_timestamp));
+    }
+    return std::make_tuple(options.start_system_timestamp,
+                           options.start_steady_timestamp);
+}
+
+}  // anonymous namespace
 
 using StrMap = SpanContext::StrMap;
+
+constexpr int Tracer::kGen128BitOption;
 
 std::unique_ptr<opentracing::Span>
 Tracer::StartSpanWithOptions(string_view operationName,
@@ -37,7 +73,11 @@ Tracer::StartSpanWithOptions(string_view operationName,
         SpanContext ctx;
         if (!parent || !parent->isValid()) {
             newTrace = true;
-            const TraceID traceID(randomID(), randomID());
+            auto highID = static_cast<uint64_t>(0);
+            if (_options & kGen128BitOption) {
+                highID = randomID();
+            }
+            const TraceID traceID(highID, randomID());
             const auto spanID = traceID.low();
             const auto parentID = 0;
             auto flags = static_cast<unsigned char>(0);
@@ -69,10 +109,14 @@ Tracer::StartSpanWithOptions(string_view operationName,
             ctx = ctx.withBaggage(parent->baggage());
         }
 
+        SystemClock::time_point startTimeSystem;
+        SteadyClock::time_point startTimeSteady;
+        std::tie(startTimeSystem, startTimeSteady) =
+            determineStartTimes(options);
         return startSpanInternal(ctx,
                                  operationName,
-                                 options.start_system_timestamp,
-                                 options.start_steady_timestamp,
+                                 startTimeSystem,
+                                 startTimeSteady,
                                  samplerTags,
                                  options.tags,
                                  newTrace,

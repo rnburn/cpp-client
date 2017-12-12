@@ -18,7 +18,15 @@
 #define JAEGERTRACING_SAMPLERS_PROBABILISTICSAMPLER_H
 
 #include "jaegertracing/Constants.h"
+#include "jaegertracing/Tag.h"
+#include "jaegertracing/TraceID.h"
 #include "jaegertracing/samplers/Sampler.h"
+#include "jaegertracing/samplers/SamplingStatus.h"
+#include <algorithm>
+#include <cstdint>
+#include <limits>
+#include <string>
+#include <vector>
 
 namespace jaegertracing {
 namespace samplers {
@@ -27,8 +35,7 @@ class ProbabilisticSampler : public Sampler {
   public:
     explicit ProbabilisticSampler(double samplingRate)
         : _samplingRate(std::max(0.0, std::min(samplingRate, 1.0)))
-        , _samplingBoundary(
-              static_cast<uint64_t>(kMaxRandomNumber * _samplingRate))
+        , _samplingBoundary(computeSamplingBoundary(_samplingRate))
         , _tags({ { kSamplerTypeTagKey, kSamplerTypeProbabilistic },
                   { kSamplerParamTagKey, _samplingRate } })
     {
@@ -53,6 +60,20 @@ class ProbabilisticSampler : public Sampler {
     double _samplingRate;
     uint64_t _samplingBoundary;
     std::vector<Tag> _tags;
+
+    static uint64_t computeSamplingBoundary(long double samplingRate)
+    {
+        const auto maxRandNumber = static_cast<long double>(kMaxRandomNumber);
+        const auto samplingBoundary = samplingRate * maxRandNumber;
+
+        // Protect against overflow in case samplingBoundary rounds
+        // higher than kMaxRandNumber.
+        if (samplingBoundary == maxRandNumber) {
+            return kMaxRandomNumber;
+        }
+
+        return static_cast<uint64_t>(samplingBoundary);
+    }
 };
 
 }  // namespace samplers

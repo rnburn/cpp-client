@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
 #include "jaegertracing/net/URI.h"
+#include <gtest/gtest.h>
+#include <iosfwd>
+#include <iterator>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace jaegertracing {
 namespace net {
@@ -53,6 +57,7 @@ TEST(URI, queryEscape)
     ASSERT_EQ("hello.world", URI::queryEscape("hello.world"));
     ASSERT_EQ("hello_world", URI::queryEscape("hello_world"));
     ASSERT_EQ("hello~world", URI::queryEscape("hello~world"));
+    ASSERT_EQ("hello%3Aworld", URI::queryEscape("hello:world"));
 }
 
 TEST(URI, queryUnescape)
@@ -107,14 +112,6 @@ TEST(URI, testParseQueryValues)
         ASSERT_EQ("key", std::begin(values)->first);
         ASSERT_EQ("value", std::begin(values)->second);
     }
-}
-
-TEST(URI, testResolveAddress)
-{
-    ASSERT_NO_THROW(resolveAddress("http://localhost", SOCK_STREAM));
-    ASSERT_NO_THROW(resolveAddress("http://localhost:80", SOCK_STREAM));
-    ASSERT_NO_THROW(resolveAddress("http://123456", SOCK_STREAM));
-    ASSERT_THROW(resolveAddress("http://localhost", -1), std::runtime_error);
 }
 
 }  // namespace net

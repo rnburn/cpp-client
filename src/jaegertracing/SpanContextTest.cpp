@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
-#include <sstream>
-
 #include "jaegertracing/SpanContext.h"
+#include "jaegertracing/TraceID.h"
+#include <algorithm>
+#include <gtest/gtest.h>
+#include <sstream>
+#include <string>
 
 namespace jaegertracing {
 namespace {

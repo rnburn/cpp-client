@@ -14,21 +14,4 @@
  * limitations under the License.
  */
 
-#ifndef JAEGERTRACING_METRICS_NULLGAUGE_H
-#define JAEGERTRACING_METRICS_NULLGAUGE_H
-
-#include "jaegertracing/metrics/Gauge.h"
-#include <cstdint>
-
-namespace jaegertracing {
-namespace metrics {
-
-class NullGauge : public Gauge {
-  public:
-    void update(int64_t) override {}
-};
-
-}  // namespace metrics
-}  // namespace jaegertracing
-
-#endif  // JAEGERTRACING_METRICS_NULLGAUGE_H
+#include "jaegertracing/samplers/RemoteSamplingJSON.h"

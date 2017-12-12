@@ -14,12 +14,37 @@
  * limitations under the License.
  */
 
-#include <sstream>
-
-#include <gtest/gtest.h>
-
+#include "jaegertracing/Config.h"
+#include "jaegertracing/Constants.h"
+#include "jaegertracing/Span.h"
+#include "jaegertracing/SpanContext.h"
+#include "jaegertracing/Tag.h"
+#include "jaegertracing/TraceID.h"
 #include "jaegertracing/Tracer.h"
+#include "jaegertracing/baggage/RestrictionsConfig.h"
+#include "jaegertracing/net/IPAddress.h"
+#include "jaegertracing/propagation/HeadersConfig.h"
+#include "jaegertracing/reporters/Config.h"
+#include "jaegertracing/samplers/Config.h"
 #include "jaegertracing/testutils/TracerUtil.h"
+#include <algorithm>
+#include <chrono>
+#include <gtest/gtest.h>
+#include <iterator>
+#include <memory>
+#include <opentracing/expected/expected.hpp>
+#include <opentracing/noop.h>
+#include <opentracing/propagation.h>
+#include <opentracing/span.h>
+#include <opentracing/string_view.h>
+#include <opentracing/tracer.h>
+#include <opentracing/util.h>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+#include <sys/socket.h>
+#include <utility>
+#include <vector>
 
 namespace jaegertracing {
 
@@ -81,6 +106,14 @@ struct ReaderMock : public BaseReader {
     const StrMap& _keyValuePairs;
 };
 
+template <typename ClockType>
+typename ClockType::duration
+absTimeDiff(const typename ClockType::time_point& lhs,
+            const typename ClockType::time_point& rhs)
+{
+    return (rhs < lhs) ? (lhs - rhs) : (rhs - lhs);
+}
+
 }  // anonymous namespace
 
 TEST(Tracer, testTracer)
@@ -116,10 +149,10 @@ TEST(Tracer, testTracer)
                                     &debugCtx);
 
     const auto& tags = tracer->tags();
-    auto itr = std::find_if(
-        std::begin(tags),
-        std::end(tags),
-        [](const Tag& tag) { return tag.key() == kTracerIPTagKey; });
+    auto itr =
+        std::find_if(std::begin(tags), std::end(tags), [](const Tag& tag) {
+            return tag.key() == kTracerIPTagKey;
+        });
     ASSERT_NE(std::end(tags), itr);
     ASSERT_TRUE(itr->value().is<std::string>());
     ASSERT_EQ(net::IPAddress::v4(itr->value().get<std::string>()).host(),
@@ -160,6 +193,45 @@ TEST(Tracer, testTracer)
     span.reset(static_cast<Span*>(
         tracer->StartSpanWithOptions("test-span-with-debug-parent", options)
             .release()));
+
+    options.references.clear();
+    options.references.emplace_back(
+        opentracing::SpanReferenceType::FollowsFromRef, &parentCtx);
+    options.start_steady_timestamp = Tracer::SteadyClock::now();
+    span.reset(static_cast<Span*>(
+        tracer
+            ->StartSpanWithOptions("test-span-with-default-system-timestamp",
+                                   options)
+            .release()));
+    const auto calculatedSystemTime =
+        static_cast<Tracer::SystemClock::time_point>(
+            opentracing::convert_time_point<Tracer::SystemClock>(
+                span->startTimeSteady()));
+    ASSERT_GE(std::chrono::milliseconds(10),
+              absTimeDiff<Tracer::SystemClock>(span->startTimeSystem(),
+                                               calculatedSystemTime));
+
+    options.start_system_timestamp = Tracer::SystemClock::now();
+    span.reset(static_cast<Span*>(
+        tracer
+            ->StartSpanWithOptions("test-span-with-default-steady-timestamp",
+                                   options)
+            .release()));
+    const auto calculatedSteadyTime =
+        static_cast<Tracer::SteadyClock::time_point>(
+            opentracing::convert_time_point<Tracer::SteadyClock>(
+                span->startTimeSystem()));
+    ASSERT_GE(std::chrono::milliseconds(10),
+              absTimeDiff<Tracer::SteadyClock>(span->startTimeSteady(),
+                                               calculatedSteadyTime));
+
+    options.start_system_timestamp = Tracer::SystemClock::now();
+    options.start_steady_timestamp = Tracer::SteadyClock::now();
+    span.reset(static_cast<Span*>(
+        tracer->StartSpanWithOptions("test-span-with-both-timestamps", options)
+            .release()));
+    ASSERT_EQ(options.start_system_timestamp, span->startTimeSystem());
+    ASSERT_EQ(options.start_steady_timestamp, span->startTimeSteady());
 
     span.reset();
 

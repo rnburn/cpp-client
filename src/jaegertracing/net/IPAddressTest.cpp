@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
-
 #include "jaegertracing/net/IPAddress.h"
+#include <gtest/gtest.h>
+#include <stdexcept>
+#include <sys/socket.h>
 
 namespace jaegertracing {
 namespace net {
 
 TEST(IPAddress, testParseFail)
 {
-    ASSERT_THROW(IPAddress::v4("256.256.256.256", 0), std::invalid_argument);
+    ASSERT_THROW(IPAddress::v4("", 0), std::runtime_error);
 }
 
 TEST(IPAddress, testAuthority)
@@ -36,6 +37,13 @@ TEST(IPAddress, testIPv6)
 {
     ASSERT_EQ("2001:db8:ac10:fe01::",
               IPAddress::v6("2001:db8:ac10:fe01::", 0).authority());
+}
+
+TEST(IPAddress, testResolveAddress)
+{
+    ASSERT_NO_THROW(resolveAddress("localhost", 80, AF_INET, SOCK_STREAM));
+    ASSERT_NO_THROW(resolveAddress("123456", 80, AF_INET, SOCK_STREAM));
+    ASSERT_THROW(resolveAddress("localhost", 80, -1), std::runtime_error);
 }
 
 }  // namespace net
