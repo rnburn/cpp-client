@@ -60,7 +60,7 @@ list(APPEND package_deps thrift)
 # Not `${hunter_config}` because OpenTracing provides its own
 # OpenTracingConfig.cmake file
 find_package(OpenTracing CONFIG REQUIRED)
-list(APPEND LIBS OpenTracing::opentracing)
+list(APPEND LIBS OpenTracing::opentracing-static)
 
 hunter_add_package(nlohmann_json)
 find_package(nlohmann_json CONFIG REQUIRED)
