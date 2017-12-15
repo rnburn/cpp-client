@@ -5,5 +5,5 @@
       opentracing::*;
       jaegertracing::*;
     };
-	local: *;
-}
+  local: *;
+};
