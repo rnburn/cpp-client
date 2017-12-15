@@ -232,6 +232,12 @@ target_include_directories(jaegertracing PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>)
 target_link_libraries(jaegertracing ${LIBS})
+if (UNIX AND NOT APPLE AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  target_link_libraries(jaegertracing 
+    -Wl,--version-script=${PROJECT_SOURCE_DIR}/export.map
+    -static-libstdc++ -static-libgcc)
+endif()
+
 set_target_properties(jaegertracing PROPERTIES
   VERSION ${PROJECT_VERSION}
   SOVERSION ${PROJECT_VERSION_MAJOR})

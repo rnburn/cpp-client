@@ -1,0 +1,9 @@
+{
+  global:
+    opentracing_make_tracer_factory;
+    extern "C++" {
+      opentracing::*;
+      jaegertracing::*;
+    };
+	local: *;
+}
