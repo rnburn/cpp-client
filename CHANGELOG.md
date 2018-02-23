@@ -1,9 +1,16 @@
 Changes by Version
 ==================
 
-0.2.0 (unreleased)
+0.3.0 (unreleased)
 ------------------
-- nothing yet
+- Nothing yet
+
+
+0.2.0 (2018-01-25)
+------------------
+- Fix bug in localIP and revert change in TR1 tuple definition (#31)
+- Add language prefix to Jaeger client version tag (#35)
+- Fix yaml-cpp issues (#39)
 
 
 0.1.0 (2017-11-29)

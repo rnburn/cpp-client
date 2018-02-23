@@ -14,7 +14,7 @@ HunterGate(
     LOCAL
 )
 
-project(jaegertracing VERSION 0.2.0)
+project(jaegertracing VERSION 0.3.0)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -254,7 +254,7 @@ configure_file(
   src/jaegertracing/Constants.h.in
   src/jaegertracing/Constants.h
   @ONLY)
-set(CMAKE_INSTALL_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 if(BUILD_TESTING)
   add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/jaegertracing/testutils")
