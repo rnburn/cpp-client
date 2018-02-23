@@ -1,5 +1,3 @@
-#include "jaegertracing/DynamicLoad.h"
-
 #include <cstring>
 #include <system_error>
 
