@@ -6,10 +6,10 @@
 #include "jaegertracing/Tracer.h"
 #include "TracerFactory.h"
 
-int 
-opentracing_make_tracer_factory(const char* opentracingVersion,
-                                const void** errorCategory,
-                                void** tracerFactory) {
+int OpenTracingMakeTracerFactory(const char* opentracingVersion,
+                                 const void** errorCategory,
+                                 void** tracerFactory)
+{
     if (std::strcmp(opentracingVersion, OPENTRACING_VERSION) != 0) {
         *errorCategory = static_cast<const void*>(
             &opentracing::dynamic_load_error_category());
